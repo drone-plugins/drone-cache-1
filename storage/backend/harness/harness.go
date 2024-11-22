@@ -1,7 +1,6 @@
 package harness
 
 import (
-	"bytes"
 	"context"
 	"encoding/xml"
 	"fmt"
@@ -107,17 +106,18 @@ type Content struct {
 }
 
 func (b *Backend) do(ctx context.Context, method, url string, body io.Reader) (*http.Response, error) {
-	var (
-		buffer []byte
-		err    error
-	)
-	if body != nil {
-		buffer, err = io.ReadAll(body)
-		if err != nil {
-			return nil, err
-		}
-	}
-	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(buffer))
+	//var (
+	//	buffer []byte
+	//	err    error
+	//)
+	//if body != nil {
+	//	buffer, err = io.ReadAll(body)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//}
+
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, err
 	}
