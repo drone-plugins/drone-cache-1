@@ -1,8 +1,10 @@
 package cache
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -18,6 +20,10 @@ import (
 	"github.com/meltwater/drone-cache/key"
 	"github.com/meltwater/drone-cache/storage"
 	"github.com/meltwater/drone-cache/storage/common"
+)
+
+const (
+	PLUGIN_CACHE_INTEL_FILE_NAME = "plugin-cache-intel.json"
 )
 
 type restorer struct {
@@ -140,6 +146,8 @@ func (r restorer) restore(src, dst string) (err error) {
 		return err
 	}
 
+	writeCacheMetadata(CacheMetadata{CacheSize: humanize.Bytes(uint64(written))}, PLUGIN_CACHE_INTEL_FILE_NAME)
+
 	level.Info(r.logger).Log("msg", "downloaded to local", "directory", dst, "cache size", humanize.Bytes(uint64(written)))
 
 	level.Debug(r.logger).Log(
@@ -178,4 +186,24 @@ func getSeparator() string {
 	}
 
 	return "/"
+}
+
+func writeCacheMetadata(data CacheMetadata, filename string) error {
+	b, err := json.MarshalIndent(data, "", "\t")
+	if err != nil {
+		return fmt.Errorf("failed with err %s to marshal output %+v", err, data)
+	}
+
+	dir := filepath.Dir(filename)
+	err = os.MkdirAll(dir, 0644)
+	if err != nil {
+		return fmt.Errorf("failed with err %s to create %s directory for cache metrics file", err, dir)
+	}
+
+	err = os.WriteFile(filename, b, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write cache metrics to cache metrics file %s", filename)
+	}
+	fmt.Println("Successfully wrote to CacheMetadata file at", filename)
+	return nil
 }

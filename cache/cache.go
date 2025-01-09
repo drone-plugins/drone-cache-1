@@ -42,6 +42,10 @@ type cache struct {
 	Flusher
 }
 
+type CacheMetadata struct {
+	CacheSize string
+}
+
 // New creates a new cache with given parameters.
 func New(logger log.Logger, s storage.Storage, a archive.Archive, g key.Generator, backend, accountID string, opts ...Option) Cache {
 	options := options{}
